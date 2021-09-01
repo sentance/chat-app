@@ -19,26 +19,26 @@ const {username, room} = Qs.parse(location.search, {ignoreQueryPrefix: true})
 
 
 socket.on('message', (message) => {
-    console.log(message)
     const html = Mustache.render(messageTemplate, {
         message: message.text,
+        username: message.username,
         createdAt: moment(message.createdAt).format('h:mm a')
     })
     $messages.insertAdjacentHTML('beforeend', html)
 })
 socket.on('location', (location) => {
-    console.log(location)
     const html = Mustache.render(locationTemplate, {
         location: location.link,
+        username: location.username,
         createdAt: moment(location.createdAt).format('h:mm a')
     })
     $messages.insertAdjacentHTML('beforeend', html)
 
 })
 
-function sendData(){
-   socket.emit('increment', inputs)
-}
+// function sendData(){
+//    socket.emit('increment', inputs)
+// }
 $messageForm.addEventListener('submit', (e) => {
     e.preventDefault()
     //Disable form button
@@ -85,4 +85,9 @@ document.getElementById('send-location').addEventListener('click', ()=>{
     
 })
 
-socket.emit('join', {username, room})
+socket.emit('join', {username, room}, (error)=>{
+    if(error){
+        alert(error)
+        lolcation.href = './'
+    }
+})

@@ -40,21 +40,6 @@ const removeUser = (id) => {
     }
 }
 
-addUser({
-    id: 2332,
-    username: 'Olehs',
-    room: 'one'
-})
-addUser({
-    id: 332,
-    username: 'Olsehs',
-    room: 'one'
-})
-addUser({
-    id: 3232,
-    username: 'Oldsehs',
-    room: 'one'
-})
 
 
 const getUser = (userId) => {
@@ -68,4 +53,9 @@ const getUsersInRoom = (room) =>{
 }
 
 
-console.log(getUsersInRoom('one'))
+module.exports = {
+    addUser,
+    getUsersInRoom,
+    getUser,
+    removeUser
+}

@@ -5,6 +5,8 @@ const socketio = require('socket.io')
 const Filter = require('bad-words')
 const {generateMessage} = require('./utils/messages')
 const {generateLocation} = require('./utils/generateLocation')
+const {addUser, getUsersInRoom, getUser, removeUser} = require('./utils/users')
+
 
 const app = express()
 const server = http.createServer(app)
@@ -19,33 +21,49 @@ app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket)=>{
 
-    socket.on('join', ({username, room})=>{
-        socket.join(room)
+    socket.on('join', (options, callback)=>{
+        const  {error, user} = addUser({id: socket.id, ...options})
+
+        if(error){
+            return callback(error)
+        }
+
+
+        socket.join(user.room)
 
         //socket.emit, io.emit, socket.broadcast.emit
         //io.to.emit, socket.broadcast.to.emit
 
-        socket.emit('message', generateMessage('Welcome'))
-        socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined`))
+        socket.emit('message', generateMessage('Admin', 'Welcome'))
+        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} has joined`))
+
+        callback()
     })
 
     socket.on('sendMessage', (message, callback)=>{
         const filter = new Filter()
-
+        const  user = getUser(socket.id)
         if(filter.isProfane(message)){
             return callback('Profanity is not alowed!!')
         }
         //send triggered data to front
-        io.to('one').emit('message', generateMessage(message))
+        io.to(user.room).emit('message', generateMessage(user.username, message))
         callback()
     })
 
     socket.on('disconnect', ()=>{
-        io.emit('message', 'A new user was disconnected')
+        const  user = removeUser(socket.id)
+
+        if(user){
+            io.to(user.room).emit('message', generateMessage(`${user.username} has left`))
+        }
+
+        
     })
     socket.on('sendLocation', (coords, callback)=>{
         //send user location data to front
-        io.emit('location', generateLocation(coords.latitude, coords.longitude))
+        const  user = getUser(socket.id)
+        io.to(user.room).emit('location', generateLocation(user.username, coords.latitude, coords.longitude))
         callback()
     })
 })
