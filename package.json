@@ -5,6 +5,7 @@
     "socket.io": "^4.1.3"
   },
   "scripts": {
-    "dev": "nodemon src/index"
+    "dev": "nodemon src/index",
+    "start": "nodemon src/index"
   }
 }
